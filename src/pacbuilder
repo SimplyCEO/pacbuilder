@@ -11,10 +11,18 @@ REPOSITORIES=(
 
 fhelp()
 {
+  local EXTRA_FLAG=$1
 
-  pacman --help | head -n 11 | sed "s/pacman/${PROJECT_NAME}/g"
-  printf "    ${PROJECT_NAME} {-B --build}    [package(s)]\n\n"
-  pacman --help | tail -n 1 | sed "s/pacman/${PROJECT_NAME}/g"
+  if [ "${EXTRA_FLAG:0:2}" = "-h" ] || [ "${EXTRA_FLAG:0:6}" = "--help" ]; then
+    printf "usage:  ${PROJECT_NAME} {-B --build} [options] [package(s)]\n \
+      \roptions:\n \
+      \r      --list           list the existing packages from the build directory\n \
+      \r                       or their contents, if provided name.\n"
+  else
+    pacman --help | head -n 11 | sed "s/pacman/${PROJECT_NAME}/g"
+    printf "    ${PROJECT_NAME} {-B --build}    [options] [package(s)]\n\n"
+    pacman --help | tail -n 1 | sed "s/pacman/${PROJECT_NAME}/g"
+  fi
 
   return 0
 }
@@ -29,6 +37,17 @@ fversion()
           \r                        the terms of the Open Software License 3.0.\n"
 
   return 0
+}
+
+list_clone_directory()
+{
+  local PACKAGE=$1
+
+  if [ -z "${PACKAGE}" ]; then ls "${REPO_FOLDER}"
+  else ls "${REPO_FOLDER}/${PACKAGE}" 2>/dev/null
+  fi
+
+  return $?
 }
 
 install_package()
@@ -109,6 +128,27 @@ case "${OPTIONS[0]}" in
     if [ $# -lt 2 ]; then fhelp; exit 1; fi
 
     shift
+    EXTRA_OPTION="$1"
+
+    # List packages from clone directory.
+    if [ "${EXTRA_OPTION:0:6}" = "--list" ]; then
+      shift
+      EXTRA_PACKAGES="$1"
+      if [ ! -z "${EXTRA_PACKAGES}" ]; then
+        for package in "$@"; do
+          list_clone_directory "${package}"
+          if [ $? -ne 0 ]; then printf "\033[1;31m::\033[0m \033[1mERROR: ${package} package not found in clone directory.\n"; exit 1; fi
+        done
+        exit 0
+      fi
+      list_clone_directory
+      exit 0
+    # Provide help for building.
+    elif [ "${EXTRA_OPTION:0:2}" = "-h" ] || [ "${EXTRA_OPTION:0:6}" = "--help" ]; then
+      fhelp "${EXTRA_OPTION}"
+      exit 0
+    fi
+
     PACKAGES=("$@")
     ;;
   *) run_pacman "$@"; break ;;
