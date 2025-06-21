@@ -95,7 +95,7 @@ clone_package()
     pushd "${REPO_FOLDER}/${PACKAGE}"
     for data in $(/bin/ls); do
       if [ "${data%.*}" != "PKGBUILD" ]; then
-        rm -r "${data}"
+        rm -rf "${data}"
       fi
     done
 
