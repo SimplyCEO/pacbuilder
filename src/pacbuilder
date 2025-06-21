@@ -1,5 +1,6 @@
 #!/bin/sh
 
+PROJECT_NAME=$(basename $0)
 REPO_FOLDER="${HOME}/.cache/pacbuilder"
 mkdir -p "${REPO_FOLDER}"
 
@@ -10,13 +11,10 @@ REPOSITORIES=(
 
 fhelp()
 {
-  printf "usage: pacbuilder <operation> [...]\n \
-          \roperations:\n \
-          \r\tpacbuilder {-h --help}\n \
-          \r\tpacbuilder {-V --version}\n \
-          \r\tpacbuilder {-S --sync}     [options] [package(s)]\n \
-          \n \
-          Other flags passed will result in a call of the default package manager.\n"
+
+  pacman --help | head -n 11 | sed "s/pacman/${PROJECT_NAME}/g"
+  printf "    ${PROJECT_NAME} {-B --build}    [package(s)]\n\n"
+  pacman --help | tail -n 1 | sed "s/pacman/${PROJECT_NAME}/g"
 
   return 0
 }
@@ -107,7 +105,7 @@ OPTIONS=("$@")
 case "${OPTIONS[0]}" in
   -h|--help) fhelp; shift ;;
   -V|--version) fversion; shift ;;
-  -S|--sync)
+  -B|--build)
     if [ $# -lt 2 ]; then fhelp; exit 1; fi
 
     shift
