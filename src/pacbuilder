@@ -250,14 +250,11 @@ case "${OPTIONS[0]}" in
             list_clone_directory "${package}" 1
             if [ $? -eq 0 ]; then clean_package "${package}"; fi
           elif [ "${EXTRA_OPTION:0:6}" = "--edit" ]; then
-            list_clone_directory "${package}" 1
-            if [ $? -eq 0 ]; then
+            clone_package "${package}"
+            if [ $? -ne 1 ]; then
               edit_package "${package}"
-              clone_package "${package}"
-              if [ $? -ne 1 ]; then
-                build_package "${package}"
-                if [ $? -eq 0 ]; then install_package "${package}"; fi
-              fi
+              build_package "${package}"
+              if [ $? -eq 0 ]; then install_package "${package}"; fi
             fi
           fi
         done
