@@ -17,7 +17,9 @@ fhelp()
     printf "usage:  ${PROJECT_NAME} {-B --build} [options] [package(s)]\n \
       \roptions:\n \
       \r      --list           list the existing packages from the build directory\n \
-      \r                       or their contents, if provided name.\n"
+      \r                       or their contents, if provided name. \
+      \r      --clean          clean the contents of each given package.\n \
+      \r"
   else
     pacman --help | head -n 11 | sed "s/pacman/${PROJECT_NAME}/g"
     printf "    ${PROJECT_NAME} {-B --build}    [options] [package(s)]\n\n"
@@ -42,9 +44,20 @@ fversion()
 list_clone_directory()
 {
   local PACKAGE=$1
+  local SILENT=$2
 
-  if [ -z "${PACKAGE}" ]; then ls "${REPO_FOLDER}"
-  else ls "${REPO_FOLDER}/${PACKAGE}" 2>/dev/null
+  if [ ! -z $SILENT ] && [ $SILENT -eq 1 ]; then
+    if [ -z "${PACKAGE}" ]; then
+      if [ -d "${REPO_FOLDER}" ]; then return 0; else return 1; fi
+    else
+      if [ -d "${REPO_FOLDER}/${PACKAGE}" ]; then return 0; else return 1; fi
+    fi
+  else
+    if [ -z "${PACKAGE}" ]; then
+      ls "${REPO_FOLDER}"
+    else
+      ls "${REPO_FOLDER}/${PACKAGE}" 2>/dev/null
+    fi
   fi
 
   return $?
@@ -71,6 +84,43 @@ build_package()
   return $?
 }
 
+clean_package()
+{
+  local PACKAGE=$1
+
+  if [ ! -z "${PACKAGE}" ]; then
+    pushd "${REPO_FOLDER}/${PACKAGE}"
+    for data in $(/bin/ls); do
+      if [ "${data%.*}" != "PKGBUILD" ]; then
+        rm -rf "${data}"
+      fi
+    done
+    popd
+  else
+    printf "\033[1;33m::\033[0m \033[1mWARNING: No packages given to be cleaned. Do you want to clean the entire folder? [y/N] \033[0m\n"
+    DEFAULT_RESPONSE="n"
+    read RESPONSE
+    if [ -z "${RESPONSE}" ]; then RESPONSE="${DEFAULT_RESPONSE}"; fi
+    case "${RESPONSE}" in
+      N|n|no)
+        exit 1
+        ;;
+      Y|y|yes)
+        pushd "${REPO_FOLDER}"
+        for folder in $(/bin/ls); do
+          rm -rf "${folder}"
+        done
+        popd
+        ;;
+      *)
+        exit 1
+        ;;
+    esac
+  fi
+
+  return 0
+}
+
 clone_package()
 {
   local PACKAGE=$1
@@ -93,11 +143,6 @@ clone_package()
 
     # Update repository
     pushd "${REPO_FOLDER}/${PACKAGE}"
-    for data in $(/bin/ls); do
-      if [ "${data%.*}" != "PKGBUILD" ]; then
-        rm -rf "${data}"
-      fi
-    done
 
     git restore .
     git pull
@@ -130,17 +175,32 @@ case "${OPTIONS[0]}" in
     shift
     EXTRA_OPTION="$1"
 
-    # List packages from clone directory.
-    if [ "${EXTRA_OPTION:0:6}" = "--list" ]; then
+    if [ "${EXTRA_OPTION:0:6}" = "--list" ] ||
+       [ "${EXTRA_OPTION:0:7}" = "--clean" ]; then
       shift
       EXTRA_PACKAGES="$1"
       if [ ! -z "${EXTRA_PACKAGES}" ]; then
         for package in "$@"; do
-          list_clone_directory "${package}"
-          if [ $? -ne 0 ]; then printf "\033[1;31m::\033[0m \033[1mERROR: ${package} package not found in clone directory.\n"; exit 1; fi
+          # List packages from clone directory.
+          if [ "${EXTRA_OPTION:0:6}" = "--list" ]; then
+            list_clone_directory "${package}"
+            if [ $? -ne 0 ]; then printf "\033[1;31m::\033[0m \033[1mERROR: ${package} package not found in clone directory.\n"; exit 1; fi
+          # Clean package directory.
+          elif [ "${EXTRA_OPTION:0:7}" = "--clean" ]; then
+            list_clone_directory "${package}" 1
+            if [ $? -eq 0 ]; then clean_package "${package}"; fi
+          fi
         done
         exit 0
       fi
+
+      # Clean packages directory.
+      if [ "${EXTRA_OPTION:0:7}" = "--clean" ]; then
+        list_clone_directory "" 1
+        if [ $? -eq 0 ]; then clean_package; fi
+        exit 0
+      fi
+
       list_clone_directory
       exit 0
     # Provide help for building.
