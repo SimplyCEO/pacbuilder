@@ -17,7 +17,7 @@ fhelp()
     printf "usage:  ${PROJECT_NAME} {-B --build} [options] [package(s)]\n \
       \roptions:\n \
       \r      --list           list the existing packages from the build directory\n \
-      \r                       or their contents, if provided name. \
+      \r                       or their contents, if provided name.\n \
       \r      --clean          clean the contents of each given package.\n \
       \r      --edit           edit PKGBUILD before compiling.\n \
       \r                       the modification will be stored as a patch file.\n \
