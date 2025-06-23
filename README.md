@@ -26,3 +26,14 @@ Pacbuilder use the `-B` or `--build` flags, not found in Pacman page:
 pacbuilder -B <package>
 ```
 
+Goals
+-----
+
+- Check alias naming for `pacbuilder`, such as `pacman`, and print the help information as the aliased name
+- Check upgradable packages and offer a way to build them
+- Code refactor
+- Log translations
+- Must handle versioning checks for the dependencies
+- Save the `makedependencies` to unistall under `/var/log/pacbuilder.makedependencies.log` or something, so if the computer is rebooted, it can still remove the `makedependencies` packages
+- Translate code to C
+
