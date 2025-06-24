@@ -95,6 +95,12 @@ build_package()
   local PACKAGE=$1
 
   cd "${REPO_FOLDER}/${PACKAGE}"
+  for data in $(/bin/ls); do
+    if [ "${data}" = "PKGBUILD.patch" ]; then
+      patch -N PKGBUILD < PKGBUILD.patch > /dev/null 2>&1
+      makepkg -g >> PKGBUILD
+    fi
+  done
   makepkg -s --skippgpcheck
 
   return $?
@@ -158,12 +164,6 @@ clone_package()
 
     git restore .
     git pull
-
-    for data in $(/bin/ls); do
-      if [ "${data}" = "PKGBUILD.patch" ]; then
-        patch -N PKGBUILD < PKGBUILD.patch > /dev/null 2>&1
-      fi
-    done
     popd
   fi
 
