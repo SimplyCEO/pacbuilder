@@ -35,5 +35,11 @@ Goals
 - Log translations
 - Must handle versioning checks for the dependencies
 - Save the `makedependencies` to unistall under `/var/log/pacbuilder.makedependencies.log` or something, so if the computer is rebooted, it can still remove the `makedependencies` packages
-- Translate code to C
+- Translate code to C:
+  * Create a way to print out a whole Shell Script as a webscript.
+  * Set MACRO for each feature, allowing users to choose and create their own version.
+  * Use only `Makefile`, nothing more.
+  * Be compatible with TinyCC.
+  * No dependency on GNU.
+  * Be available for the use with MSYS2.
 
