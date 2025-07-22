@@ -4,7 +4,8 @@ PROJECT_NAME=$(basename $0)
 REPO_FOLDER="${HOME}/.cache/pacbuilder"
 mkdir -p "${REPO_FOLDER}"
 
-REPOSITORIES="https://gitea.artixlinux.org/packages https://gitlab.archlinux.org/archlinux/packaging/packages"
+REPOSITORIES=$(grep -v "#" /etc/pacbuilder.d/mirrorlist)
+if [ -z "${REPOSITORIES}" ]; then REPOSITORIES="https://gitlab.archlinux.org/archlinux/packaging/packages"; fi
 
 # core #
 
@@ -200,7 +201,9 @@ clone_package()
     printf "\033[1;34m::\033[0m \033[1mAttempting to download ${PACKAGE}...\033[0m\n"
 
     for GITURL in "${REPOSITORIES}"; do
-      GIT_TERMINAL_PROMPT=0 git clone ${GITURL}/${PACKAGE}.git ${REPO_FOLDER}/${PACKAGE} >/dev/null 2>&1
+      if [ ! -z "${GITURL}"]; then
+        GIT_TERMINAL_PROMPT=0 git clone ${GITURL}/${PACKAGE}.git ${REPO_FOLDER}/${PACKAGE} >/dev/null 2>&1
+      fi
     done
 
     if [ ! -d "${REPO_FOLDER}/${PACKAGE}" ]; then

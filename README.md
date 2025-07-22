@@ -26,6 +26,11 @@ Pacbuilder use the `-B` or `--build` flags, not found in Pacman page:
 pacbuilder -B <package>
 ```
 
+Repositories are stored in `/etc/pacbuilder.d/mirrorlist`. If there is none, it is recommended to install:
+```shell
+su -c "make install"
+```
+
 Goals
 -----
 
