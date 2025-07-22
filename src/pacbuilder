@@ -45,7 +45,7 @@ array()
   local i=0
   while [ $i -lt $(strlen "${string}") ]; do
     local c=$(char $((i+1)) "${string}")
-    if [ "${c}" = " " ]; then
+    if [ "${c}" = " " ] || [ $i -eq $(($(strlen "${string}")-1)) ]; then
       if [ $count -eq $index ]; then echo "${array}"; return 0; fi
       array=""
       count=$((count+1))
