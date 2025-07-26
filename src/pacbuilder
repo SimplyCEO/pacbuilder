@@ -9,6 +9,8 @@ REPOSITORIES=""
 if [ -f "/etc/pacbuilder.d/mirrorlist" ]; then REPOSITORIES=$(grep -v "#" /etc/pacbuilder.d/mirrorlist); fi
 if [ -z "${REPOSITORIES}" ]; then REPOSITORIES="https://gitlab.archlinux.org/archlinux/packaging/packages"; fi
 
+SKIP_PGP_SIGNATURE=""
+
 # core #
 
 char()
@@ -57,7 +59,7 @@ fhelp()
   local EXTRA_FLAG=$1
 
   if [ $(strncmp "${EXTRA_FLAG}" "-h" 2) = 0 ] || [ $(strncmp "${EXTRA_FLAG}" "--help" 6) = 0 ]; then
-    printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n"                                       \
+    printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n"                                   \
       "usage:  ${PROJECT_NAME} {-B --build} [options] [package(s)]"                 \
       "options:"                                                                    \
       "  -u, --upgrade        clean and upgrade the contents of each package."      \
@@ -65,7 +67,8 @@ fhelp()
       "      --list           list the existing packages from the build directory"  \
       "                       or their contents, if provided name."                 \
       "      --edit           edit PKGBUILD before compiling."                      \
-      "                       the modification will be stored as a patch file."
+      "                       the modification will be stored as a patch file."     \
+      "      --skippgpcheck   skip PGP key signature checking: not recommended."
   else
     pacman --help | head -n 11 | sed "s/pacman/${PROJECT_NAME}/g"
     printf "    ${PROJECT_NAME} {-B --build}    [options] [package(s)]\n\n"
@@ -147,7 +150,7 @@ build_package()
       makepkg -g >> PKGBUILD
     fi
   done
-  makepkg -s
+  makepkg -s "${SKIP_PGP_SIGNATURE}"
 
   return $?
 }
@@ -369,6 +372,7 @@ case "${FLAG_CALL}" in
         # List packages from clone directory.
         --list) LIST_PACKAGES=1 ;;
         --edit) EDIT_PACKAGES=1 ;;
+        --skippgpcheck) SKIP_PGP_SIGNATURE="--skippgpcheck" ;;
         -u|--upgrade) UPGRADE_PACKAGES=1 ;;
         *) fhelp "${extra_option}"; exit 0 ;;
       esac
