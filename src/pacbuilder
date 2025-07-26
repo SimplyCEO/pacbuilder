@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PROJECT_NAME=$(basename $0)
-PROJECT_VERSION="0.0.6"
+PROJECT_VERSION="0.0.8"
 REPO_FOLDER="${HOME}/.cache/pacbuilder"
 mkdir -p "${REPO_FOLDER}"
 
@@ -147,7 +147,7 @@ build_package()
       makepkg -g >> PKGBUILD
     fi
   done
-  makepkg -s --skippgpcheck
+  makepkg -s
 
   return $?
 }
@@ -347,56 +347,53 @@ upgrade_packages()
 if [ $# -lt 1 ]; then fhelp; exit 1; fi
 
 OPTIONS="$@"
-case $(array 0 "${OPTIONS}") in
-  -h|--help) fhelp; shift ;;
-  -V|--version) fversion; shift ;;
+FLAG_CALL=$(array 0 "${OPTIONS}")
+case "${FLAG_CALL}" in
+  -h|--help) fhelp; exit 0 ;;
+  -V|--version) fversion; exit 0 ;;
   -B|-Bu|--build)
     if [ $# -lt 2 ]; then fhelp; exit 1; fi
 
+    EXTRA_OPTION=0
+    LIST_PACKAGES=0
+    CLEAN_PACKAGES=0
+    EDIT_PACKAGES=0
+    UPGRADE_PACKAGES=0
     shift
-    EXTRA_OPTION="$1"
 
-    case "${EXTRA_OPTION}" in
-      --clean|--edit|--list|--upgrade)
-        shift
-        EXTRA_PACKAGES="$@"
-        if [ ! -z "${EXTRA_PACKAGES}" ]; then
-          for package in $(echo "${EXTRA_PACKAGES}" | cut -d " " -f 1-5000); do
-            case "${EXTRA_OPTION}" in
-              # List packages from clone directory.
-              --list) list_packages "${package}" ;;
-              # Clean package directory.
-              --clean) clean_packages "${package}" ;;
-              --edit) edit_packages "${package}" ;;
-              --upgrade) upgrade_packages "${package}" ;;
-            esac
-          done
-          exit 0
+    for extra_option in "$@"; do
+      if [ $(char 1 "${extra_option}") != "-" ]; then break; fi
+      case "${extra_option}" in
+        # Clean package directory.
+        --clean) CLEAN_PACKAGES=1 ;;
+        # List packages from clone directory.
+        --list) LIST_PACKAGES=1 ;;
+        --edit) EDIT_PACKAGES=1 ;;
+        -u|--upgrade) UPGRADE_PACKAGES=1 ;;
+        *) fhelp "${extra_option}"; exit 0 ;;
+      esac
+      EXTRA_OPTION=1
+      shift
+    done
+
+    for package in $(echo "$@" | cut -d " " -f 1-5000); do
+      if [ ! -z "${package}" ]; then
+        if [ $EXTRA_OPTION -eq 1 ]; then
+          if [ $CLEAN_PACKAGES -eq 1 ]; then clean_packages "${package}"; fi
+          if [ $EDIT_PACKAGES -eq 1 ]; then edit_packages "${package}"; fi
+          if [ $LIST_PACKAGES -eq 1 ]; then list_packages "${package}"; fi
+          if [ $UPGRADE_PACKAGES -eq 1 ]; then upgrade_packages "${package}"; fi
+        else
+          case "${FLAG_CALL}" in
+            -B|--build) build_packages "${package}" ;;
+            -Bu) upgrade_packages "${package}" ;;
+          esac
         fi
-
+      else
         # Clean packages directory.
-        case "${EXTRA_OPTION}" in
-          --clean) clean_packages NULL; exit 0 ;;
-        esac
-
-        list_clone_directory
-        exit 0
-        ;;
-      # Provide help for building.
-      -h|--help)
-        fhelp "${EXTRA_OPTION}"
-        exit 0
-        ;;
-    esac
-
-    if [ ! -z "$@" ]; then
-      for package in $(echo "$@" | cut -d " " -f 1-5000); do
-        case $(array 0 "${OPTIONS}") in
-          -B|--build) build_packages "${package}" ;;
-          -Bu) upgrade_packages "${package}" ;;
-        esac
-      done
-    fi
+        if [ $CLEAN_PACKAGES -eq 1 ]; then clean_packages NULL; fi
+      fi
+    done
     ;;
   *) run_pacman "$@"; break ;;
 esac
