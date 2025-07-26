@@ -401,6 +401,7 @@ case "${FLAG_CALL}" in
     else
       # Clean packages directory.
       if [ $CLEAN_PACKAGES -eq 1 ] && [ $UPGRADE_PACKAGES -ne 1 ]; then clean_packages NULL; fi
+      if [ $LIST_PACKAGES -eq 1 ]; then list_packages; fi
       # Upgrade all packages inside clone directory.
       if [ $UPGRADE_PACKAGES -eq 1 ]; then
         for package in $(ls "${REPO_FOLDER}"); do
