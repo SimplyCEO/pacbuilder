@@ -344,49 +344,47 @@ case $(array 0 "${OPTIONS}") in
     EXTRA_OPTION="$1"
 
     case "${EXTRA_OPTION}" in
-    --clean|--edit|--list|--upgrade)
-      shift
-      EXTRA_PACKAGES="$@"
-      if [ ! -z "${EXTRA_PACKAGES}" ]; then
-        for package in $(echo "${EXTRA_PACKAGES}" | cut -d " " -f 1-500); do
-          case "${EXTRA_OPTION}" in
-            # List packages from clone directory.
-            --list) list_packages "${package}" ;;
-            # Clean package directory.
-            --clean) clean_packages "${package}" ;;
-            --edit) edit_packages "${package}" ;;
-            --upgrade) upgrade_packages "${package}" ;;
-          esac
-        done
+      --clean|--edit|--list|--upgrade)
+        shift
+        EXTRA_PACKAGES="$@"
+        if [ ! -z "${EXTRA_PACKAGES}" ]; then
+          for package in $(echo "${EXTRA_PACKAGES}" | cut -d " " -f 1-5000); do
+            case "${EXTRA_OPTION}" in
+              # List packages from clone directory.
+              --list) list_packages "${package}" ;;
+              # Clean package directory.
+              --clean) clean_packages "${package}" ;;
+              --edit) edit_packages "${package}" ;;
+              --upgrade) upgrade_packages "${package}" ;;
+            esac
+          done
+          exit 0
+        fi
+
+        # Clean packages directory.
+        case "${EXTRA_OPTION}" in
+          --clean) clean_packages NULL; exit 0 ;;
+        esac
+
+        list_clone_directory
         exit 0
-      fi
-
-      # Clean packages directory.
-      case "${EXTRA_OPTION}" in
-        --clean) clean_packages NULL; exit 0 ;;
-      esac
-
-      list_clone_directory
-      exit 0
-      ;;
-    # Provide help for building.
-    -h|--help)
-      fhelp "${EXTRA_OPTION}"
-      exit 0
-      ;;
+        ;;
+      # Provide help for building.
+      -h|--help)
+        fhelp "${EXTRA_OPTION}"
+        exit 0
+        ;;
     esac
 
-    PACKAGES="$@"
+    if [ ! -z "$@" ]; then
+      for package in $(echo "$@" | cut -d " " -f 1-5000); do
+        case $(array 0 "${OPTIONS}") in
+          -B|--build) build_packages "${package}" ;;
+          -Bu) upgrade_packages "${package}" ;;
+        esac
+      done
+    fi
     ;;
   *) run_pacman "$@"; break ;;
 esac
-
-if [ ! -z "${PACKAGES}" ]; then
-  for PKG in "${PACKAGES}"; do
-    case $(array 0 "${OPTIONS}") in
-      -B|--build) build_packages "${PKG}" ;;
-      -Bu) upgrade_packages "${PKG}" ;;
-    esac
-  done
-fi
 
