@@ -8,9 +8,14 @@ then installing and storing the generated package into Pacman `pkg` folder.
 Installation
 ------------
 
-Move `src/pacbuilder` to the local binary folder:
+Copy `src/pacbuilder` to the local binary folder:
 ```shell
 su -c "cp src/pacbuilder /usr/local/bin"
+```
+
+Copy `pacbuiler.conf` and `pacbuilder.d` to `/etc` folder:
+```shell
+su -c "cp -r assets/* /etc"
 ```
 
 Optional: Alias the `pacman` command to `pacbuilder` in the `.$SHELLrc` initialisation file:
@@ -26,10 +31,11 @@ Pacbuilder use the `-B` or `--build` flags, not found in Pacman page:
 pacbuilder -B <package>
 ```
 
-Repositories are stored in `/etc/pacbuilder.d/mirrorlist`. If there is none, it is recommended to install:
-```shell
-su -c "make install"
-```
+Repositories are stored in `/etc/pacbuilder.d/mirrorlist`.
+
+The file is read from top to bottom and it will not add lines that are commented out (#).
+
+AUR cloning is fully supported, even though it is not a tool for it. Use a ideal tool for the job, like `paru`, for AUR package wrapping.
 
 Goals
 -----
