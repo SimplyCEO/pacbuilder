@@ -384,19 +384,26 @@ case "${FLAG_CALL}" in
       shift 1
     done
 
-    if [ ! -z "$@" ]; then
-      for package in $(echo "$@" | cut -d " " -f 1-5000); do
+    STRING="$@"
+    if [ ! -z "${STRING}" ]; then
+      for package in "$@"; do
         if [ $EXTRA_OPTION -eq 1 ]; then
-          if [ $CLEAN_PACKAGES -eq 1 ]; then clean_packages "${package}"; fi
-          if [ $EDIT_PACKAGES -eq 1 ]; then edit_packages "${package}"; fi
-          if [ $LIST_PACKAGES -eq 1 ]; then list_packages "${package}"; fi
-          if [ $UPGRADE_PACKAGES -eq 1 ]; then upgrade_packages "${package}"; fi
-        else
-          case "${FLAG_CALL}" in
-            -B|--build) build_packages "${package}" ;;
-            -Bu) upgrade_packages "${package}" ;;
-          esac
+          if [ $EDIT_PACKAGES -eq 1 ]; then edit_packages "${package}"; continue; fi
+          if [ $LIST_PACKAGES -eq 1 ]; then list_packages "${package}"; continue; fi
         fi
+
+        if [ $CLEAN_PACKAGES -eq 1 ]; then clean_packages "${package}"; fi
+
+        case "${FLAG_CALL}" in
+          -B|--build)
+            if [ $UPGRADE_PACKAGES -eq 1 ]; then
+              upgrade_packages "${package}"
+            else
+              build_packages "${package}"
+            fi
+            ;;
+          -Bu) upgrade_packages "${package}" ;;
+        esac
       done
     else
       # Clean packages directory.
