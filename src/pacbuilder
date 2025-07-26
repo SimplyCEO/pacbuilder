@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PROJECT_NAME=$(basename $0)
-PROJECT_VERSION="0.0.8"
+PROJECT_VERSION="0.0.9"
 REPO_FOLDER="${HOME}/.cache/pacbuilder"
 mkdir -p "${REPO_FOLDER}"
 
@@ -355,14 +355,18 @@ case "${FLAG_CALL}" in
   -h|--help) fhelp; exit 0 ;;
   -V|--version) fversion; exit 0 ;;
   -B|-Bu|--build)
-    if [ $# -lt 2 ]; then fhelp; exit 1; fi
-
     EXTRA_OPTION=0
     LIST_PACKAGES=0
     CLEAN_PACKAGES=0
     EDIT_PACKAGES=0
     UPGRADE_PACKAGES=0
-    shift
+
+    case "${FLAG_CALL}" in
+      -Bu) UPGRADE_PACKAGES=1 ;;
+      *) if [ $# -lt 2 ]; then fhelp; exit 1; fi ;;
+    esac
+
+    shift 1
 
     for extra_option in "$@"; do
       if [ $(char 1 "${extra_option}") != "-" ]; then break; fi
@@ -377,11 +381,11 @@ case "${FLAG_CALL}" in
         *) fhelp "${extra_option}"; exit 0 ;;
       esac
       EXTRA_OPTION=1
-      shift
+      shift 1
     done
 
-    for package in $(echo "$@" | cut -d " " -f 1-5000); do
-      if [ ! -z "${package}" ]; then
+    if [ ! -z "$@" ]; then
+      for package in $(echo "$@" | cut -d " " -f 1-5000); do
         if [ $EXTRA_OPTION -eq 1 ]; then
           if [ $CLEAN_PACKAGES -eq 1 ]; then clean_packages "${package}"; fi
           if [ $EDIT_PACKAGES -eq 1 ]; then edit_packages "${package}"; fi
@@ -393,11 +397,17 @@ case "${FLAG_CALL}" in
             -Bu) upgrade_packages "${package}" ;;
           esac
         fi
-      else
-        # Clean packages directory.
-        if [ $CLEAN_PACKAGES -eq 1 ]; then clean_packages NULL; fi
+      done
+    else
+      # Clean packages directory.
+      if [ $CLEAN_PACKAGES -eq 1 ] && [ $UPGRADE_PACKAGES -ne 1 ]; then clean_packages NULL; fi
+      # Upgrade all packages inside clone directory.
+      if [ $UPGRADE_PACKAGES -eq 1 ]; then
+        for package in $(ls "${REPO_FOLDER}"); do
+          upgrade_packages "${package}"
+        done
       fi
-    done
+    fi
     ;;
   *) run_pacman "$@"; break ;;
 esac
