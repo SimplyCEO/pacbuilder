@@ -208,6 +208,7 @@ clone_package()
           esac
         fi
         GIT_TERMINAL_PROMPT=0 git clone ${GITURL}/${PACKAGE}.git ${REPO_FOLDER}/${PACKAGE} >/dev/null 2>&1
+        if [ $? -eq 0 ]; then break; fi
       fi
     done
 
