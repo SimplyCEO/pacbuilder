@@ -250,6 +250,7 @@ edit_package()
       local DEFAULT_RESPONSE="delete"
       read RESPONSE
       if [ -z "${RESPONSE}" ]; then RESPONSE="${DEFAULT_RESPONSE}"; fi
+      RESPONSE=$(echo "${RESPONSE}" | tr '[:upper:]' '[:lower:]')
       case "${RESPONSE}" in
         skip) SKIP_EDIT=1 ;;
         read)
