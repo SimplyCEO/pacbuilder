@@ -294,7 +294,7 @@ run_pacman()
 
 build_packages()
 {
-  clone_package "$1"
+  clone_package "$1" $2
   if [ $? -ne 1 ]; then
     build_package "$1"
     if [ $? -eq 0 ]; then
@@ -340,13 +340,7 @@ upgrade_packages()
   list_clone_directory "$1" 1
   if [ $? -eq 0 ]; then
     clean_package "$1"
-    clone_package "$1" 1
-    if [ $? -ne 1 ]; then
-      build_package "$1"
-      if [ $? -eq 0 ]; then
-        install_package "$1"
-      fi
-    fi
+    build_packages "$1" 1
   fi
 }
 
