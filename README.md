@@ -1,9 +1,16 @@
 Pacbuilder
 ==========
 
-A Pacman package builder.
+A Pacman package builder/wrapper.
 It works as cloning the package source and compiling,
 then installing and storing the generated package into Pacman `pkg` folder.
+
+This is not the original project,
+since the original has been deprecated and no longer works,
+but it works in a unique way.
+
+The main goal is to provide the best solution for building packages,
+while acting as a extension for Pacman.
 
 Installation
 ------------
@@ -53,4 +60,9 @@ Goals
   * Be compatible with TinyCC.
   * No dependency on GNU.
   * Be available for the use with MSYS2.
+
+Licencing
+---------
+
+Since this a completely rewritten project, the licence changed to Open Software License 3.0, even though it may not be ideal for most users.
 
