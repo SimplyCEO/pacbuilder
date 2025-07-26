@@ -114,10 +114,11 @@ get_editor()
 {
   if [ -z $EDITOR ]; then
     local EDITOR_ARRAY="vim vi nano neovim ed"
-    for editor in $(echo "${EDITOR_ARRAY}" | cut -d " " -f 1-500); do
+    for editor in $(echo "${EDITOR_ARRAY}" | cut -d " " -f 1-5); do
       if which $editor >/dev/null 2>&1; then echo $editor; return 0; fi
     done
   else
+    echo $EDITOR
     return 0
   fi
 
@@ -189,6 +190,7 @@ clone_package()
 {
   local PACKAGE=$1
   local UPGRADE=$2
+  local EDIT=$3
 
   if [ ! -f "${REPO_FOLDER}/${PACKAGE}/PKGBUILD" ]; then
     printf "\033[1;34m::\033[0m \033[1mAttempting to download ${PACKAGE}...\033[0m\n"
@@ -218,6 +220,7 @@ clone_package()
     fi
 
     cd "${REPO_FOLDER}/${PACKAGE}"
+    if [ ! -z $EDIT ] && [ $EDIT -eq 1 ]; then edit_package ${PACKAGE}; fi
     makepkg --printsrcinfo > .SRCINFO
     cd - >/dev/null 2>&1
 
@@ -230,6 +233,7 @@ clone_package()
 
     git restore .
     if [ ! -z $UPGRADE ] && [ $UPGRADE -eq 1 ]; then git pull; fi
+    if [ ! -z $EDIT ] && [ $EDIT -eq 1 ]; then edit_package ${PACKAGE}; fi
     if [ ! -f .SRCINFO ]; then makepkg --printsrcinfo > .SRCINFO; fi
     cd - >/dev/null 2>&1
   fi
@@ -311,9 +315,8 @@ clean_packages()
 
 edit_packages()
 {
-  clone_package $1
+  clone_package $1 0 1
   if [ $? -ne 1 ]; then
-    edit_package $1
     build_package $1
     if [ $? -eq 0 ]; then
       install_package $1
