@@ -87,9 +87,9 @@ fhelp()
 fversion()
 {
   printf "%s\n%s\n%s\n%s\n%s\n%s\n"                                                         \
-    "  .--.                  Pacbuilder v${PROJECT_VERSION}"                                             \
+    "  .--.                  Pacbuilder v${PROJECT_VERSION}"                                \
     " / _.-' .-.  .-.  .-.   Copyright (C) 2025 SimplyCEO <simplyceo.developer@gmail.com>"  \
-    " \\  '-. '-'  '-'  '-'"                                                                \
+    " \\  '-. '-'  '-'  '-'   Repository: https://github.com/SimplyCEO/pacbuilder"          \
     "  '--'"                                                                                \
     "                        This application may be freely redistributed under"            \
     "                        the terms of the Open Software License 3.0."
