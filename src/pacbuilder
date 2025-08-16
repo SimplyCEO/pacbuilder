@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PROJECT_NAME=$(basename $0)
-PROJECT_VERSION="0.0.15"
+PROJECT_VERSION="0.0.16"
 REPO_FOLDER="${HOME}/.cache/pacbuilder"
 mkdir -p "${REPO_FOLDER}"
 
@@ -13,6 +13,10 @@ if [ -z "${REPOSITORIES}" ]; then REPOSITORIES="https://gitlab.archlinux.org/arc
 
 PACKAGE_PWD=""
 DEPENDENCY_RABBIT_HOLE=0
+CLEAN_PACKAGES=0
+EDIT_PACKAGES=0
+LIST_PACKAGES=0
+PURGE_PACKAGES=0
 UPGRADE_PACKAGES=0
 SKIP_PGP_SIGNATURE=""
 
@@ -66,15 +70,16 @@ fhelp()
   local EXTRA_FLAG=$1
 
   if [ $(strncmp "${EXTRA_FLAG}" "-h" 2) = 0 ] || [ $(strncmp "${EXTRA_FLAG}" "--help" 6) = 0 ]; then
-    printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n"                                   \
+    printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n"                                   \
       "usage:  ${PROJECT_NAME} {-B --build} [options] [package(s)]"                 \
       "options:"                                                                    \
       "  -u, --upgrade        clean and upgrade the contents of each package."      \
-      "      --clean          clean the contents of each given package."            \
+      "      --clean          clean build contents of each given package."            \
       "      --list           list the existing packages from the build directory"  \
       "                       or their contents, if provided name."                 \
       "      --edit           edit PKGBUILD before compiling."                      \
       "                       the modification will be stored as a patch file."     \
+      "      --purge          clean source files within the package directory."  \
       "      --skippgpcheck   skip PGP key signature checking: not recommended."
   else
     pacman --help | head -n 11 | sed "s/pacman/${PROJECT_NAME}/g"
@@ -293,10 +298,18 @@ clean_package()
   local PACKAGE=$1
 
   if [ -d "${REPO_FOLDER}/${PACKAGE}" ]; then
-    printf "\033[1;34m::\033[0m \033[1mCleaning \'${PACKAGE}\' package source tree...\033[0m\n"
-    rm -rf "${REPO_FOLDER}/${PACKAGE}"/src/*build*
-    rm -f "${REPO_FOLDER}/${PACKAGE}"/*.tar.*
-    rm -f "${REPO_FOLDER}/${PACKAGE}"/PKGBUILD.rej
+    if [ $CLEAN_PACKAGES -eq 1 ]; then
+      printf "\033[1;34m::\033[0m \033[1mCleaning \'${PACKAGE}\' package source tree...\033[0m\n"
+      rm -rf "${REPO_FOLDER}/${PACKAGE}"/src/*build*
+      rm -f "${REPO_FOLDER}/${PACKAGE}"/*.tar.pkg.*
+      rm -f "${REPO_FOLDER}/${PACKAGE}"/PKGBUILD.rej
+    fi
+    if [ $PURGE_PACKAGES -eq 1 ]; then
+      printf "\033[1;34m::\033[0m \033[1mPurging \'${PACKAGE}\' package source tree...\033[0m\n"
+      rm -rf "${REPO_FOLDER}/${PACKAGE}"/pkg
+      rm -rf "${REPO_FOLDER}/${PACKAGE}"/src
+      rm -f "${REPO_FOLDER}/${PACKAGE}"/*.tar.*
+    fi
     return 0
   fi
 
@@ -522,9 +535,6 @@ case "${FLAG_CALL}" in
   -V|--version) fversion; exit 0 ;;
   -B|-Bu|--build)
     EXTRA_OPTION=0
-    LIST_PACKAGES=0
-    CLEAN_PACKAGES=0
-    EDIT_PACKAGES=0
 
     case "${FLAG_CALL}" in
       -Bu) UPGRADE_PACKAGES=1 ;;
@@ -542,6 +552,7 @@ case "${FLAG_CALL}" in
         --list) LIST_PACKAGES=1 ;;
         --edit) EDIT_PACKAGES=1 ;;
         --skippgpcheck) SKIP_PGP_SIGNATURE="--skippgpcheck" ;;
+        --purge) PURGE_PACKAGES=1 ;;
         -u|--upgrade) UPGRADE_PACKAGES=1 ;;
         *) fhelp "${extra_option}"; exit 0 ;;
       esac
@@ -557,7 +568,7 @@ case "${FLAG_CALL}" in
           if [ $LIST_PACKAGES -eq 1 ]; then list_packages "${package}"; continue; fi
         fi
 
-        if [ $CLEAN_PACKAGES -eq 1 ]; then clean_packages "${package}"; fi
+        if [ $CLEAN_PACKAGES -eq 1 ] || [ $PURGE_PACKAGES -eq 1 ]; then clean_packages "${package}"; fi
 
         case "${FLAG_CALL}" in
           -B|--build)
@@ -574,7 +585,7 @@ case "${FLAG_CALL}" in
       done
     else
       # Clean packages directory.
-      if [ $CLEAN_PACKAGES -eq 1 ] && [ $UPGRADE_PACKAGES -ne 1 ]; then clean_packages NULL; fi
+      if [ $CLEAN_PACKAGES -eq 1 ] || [ $PURGE_PACKAGES -eq 1 ] && [ $UPGRADE_PACKAGES -ne 1 ]; then clean_packages NULL; fi
       if [ $LIST_PACKAGES -eq 1 ]; then list_packages; fi
       # Upgrade all packages inside clone directory.
       if [ $UPGRADE_PACKAGES -eq 1 ]; then
