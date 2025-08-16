@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PROJECT_NAME=$(basename $0)
-PROJECT_VERSION="0.0.14"
+PROJECT_VERSION="0.0.15"
 REPO_FOLDER="${HOME}/.cache/pacbuilder"
 mkdir -p "${REPO_FOLDER}"
 
@@ -129,6 +129,19 @@ get_editor()
     done
   else
     echo $EDITOR
+    return 0
+  fi
+
+  return 1
+}
+
+fetch_pgp_key()
+{
+  if [ -d "./keys/pgp" ] && [ ! -z "$(ls ./keys/pgp/*.asc)" ]; then
+    printf "%b::%b%b %s%b\n" \
+      "\033[1;34m" "\033[0m"  \
+      "\033[1m" "Local PGP keys found. Importing..." "\033[0m"
+    gpg --quiet --import ./keys/pgp/*.asc
     return 0
   fi
 
@@ -265,7 +278,12 @@ build_package()
       makepkg -g >> PKGBUILD
     fi
   done
+
   makepkg -s "${SKIP_PGP_SIGNATURE}"
+  if [ $? -ne 0 ]; then
+    fetch_pgp_key
+    if [ $? -eq 0 ]; then makepkg -s; fi
+  fi
 
   return $?
 }
