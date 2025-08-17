@@ -226,21 +226,23 @@ clean_repository()
       *) break ;;
     esac
 
-    DEFAULT_RESPONSE="n"
-    printf "\033[1;33m::\033[0m \033[1m         Do you want to clean the entire folder? [y/N] \033[0m"
-    read RESPONSE
-    if [ -z "${RESPONSE}" ]; then RESPONSE="${DEFAULT_RESPONSE}"; fi
-    case $(char 1 $(echo "${RESPONSE}" | tr '[:upper:]' '[:lower:]')) in
-      y)
-        cd "${REPO_FOLDER}"
-          for folder in $(/bin/ls); do
-            rm -rf "${folder}"
-          done
-        cd - >/dev/null
-        return 0
-        ;;
-      *) return 1 ;;
-    esac
+    if [ $PURGE_PACKAGES -eq 1 ]; then
+      DEFAULT_RESPONSE="n"
+      printf "\033[1;33m::\033[0m \033[1m         Do you want to clean the entire folder? [y/N] \033[0m"
+      read RESPONSE
+      if [ -z "${RESPONSE}" ]; then RESPONSE="${DEFAULT_RESPONSE}"; fi
+      case $(char 1 $(echo "${RESPONSE}" | tr '[:upper:]' '[:lower:]')) in
+        y)
+          cd "${REPO_FOLDER}"
+            for folder in $(/bin/ls); do
+              rm -rf "${folder}"
+            done
+          cd - >/dev/null
+          return 0
+          ;;
+        *) return 1 ;;
+      esac
+    fi
   fi
 
   return 0

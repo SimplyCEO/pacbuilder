@@ -55,7 +55,7 @@ case "${FLAG_CALL}" in
           if [ $LIST_PACKAGES -eq 1 ]; then list_packages "${package}"; continue; fi
         fi
 
-        if [ $CLEAN_PACKAGES -eq 1 ] || [ $PURGE_PACKAGES -eq 1 ]; then clean_packages "${package}"; fi
+        if [ $CLEAN_PACKAGES -eq 1 ] || [ $PURGE_PACKAGES -eq 1 ]; then clean_packages "${package}"; continue; fi
 
         case "${FLAG_CALL}" in
           -B|--build)
@@ -72,7 +72,7 @@ case "${FLAG_CALL}" in
       done
     else
       # Clean packages directory.
-      if [ $CLEAN_PACKAGES -eq 1 ] || [ $PURGE_PACKAGES -eq 1 ] && [ $UPGRADE_PACKAGES -ne 1 ]; then clean_packages NULL; fi
+      if [ $CLEAN_PACKAGES -eq 1 ] || [ $PURGE_PACKAGES -eq 1 ] && [ $UPGRADE_PACKAGES -ne 1 ]; then clean_packages NULL; exit 0; fi
       if [ $LIST_PACKAGES -eq 1 ]; then list_packages; fi
       # Upgrade all packages inside clone directory.
       if [ $UPGRADE_PACKAGES -eq 1 ]; then
