@@ -17,12 +17,12 @@ Installation
 
 Copy `src/pacbuilder` to the local binary folder:
 ```shell
-su -c "cp src/pacbuilder /usr/local/bin"
+su -c "make install-binary"
 ```
 
 Copy `pacbuiler.conf` and `pacbuilder.d` to `/etc` folder:
 ```shell
-su -c "cp -r assets/* /etc"
+su -c "make install-configuration install-mirrorlist"
 ```
 
 Optional: Alias the `pacman` command to `pacbuilder` in the `.$SHELLrc` initialisation file:
