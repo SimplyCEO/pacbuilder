@@ -79,7 +79,7 @@ case "${FLAG_CALL}" in
         for package in $(ls "${REPO_FOLDER}"); do
           upgrade_packages "${package}"
           DEPENDENCY_RABBIT_HOLE=0
-          PACKaGE_PWD=""
+          PACKAGE_PWD=""
         done
       fi
     fi
