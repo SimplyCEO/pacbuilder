@@ -184,7 +184,7 @@ clean_package()
   local PACKAGE=$1
 
   if [ -d "${REPO_FOLDER}/${PACKAGE}" ]; then
-    if [ $CLEAN_PACKAGES -eq 1 ]; then
+    if [ $CLEAN_PACKAGES -eq 1 ] || [ $UPGRADE_PACKAGES -eq 1 ]; then
       printf "\033[1;34m::\033[0m \033[1mCleaning \'${PACKAGE}\' package source tree...\033[0m\n"
       rm -rf "${REPO_FOLDER}/${PACKAGE}"/src/*build*
       rm -f "${REPO_FOLDER}/${PACKAGE}"/*.tar.pkg.*
