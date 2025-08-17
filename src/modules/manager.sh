@@ -4,11 +4,9 @@ source /etc/pacbuilder.d/modules/project.sh
 
 build_packages()
 {
-  local BUILD_BLAME=""
-
   clone_package "$1" $2
   if [ $? -eq 0 ]; then
-    BUILD_BLAME=$(build_package "$1")
+    build_package "$1"
     if [ $? -eq 0 ]; then
       install_package "$1"
       return 0

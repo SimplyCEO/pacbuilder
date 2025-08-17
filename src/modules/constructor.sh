@@ -2,6 +2,8 @@
 
 source /etc/pacbuilder.d/modules/project.sh
 
+BUILD_BLAME=""
+
 list_clone_directory()
 {
   local PACKAGE=$1
@@ -152,7 +154,7 @@ build_package()
   if [ $UPGRADE_PACKAGES -eq 1 ]; then
     compare_version "${PACKAGE}"
     if [ $? -eq 1 ]; then
-      printf "Package version is the same as system.\n"
+      BUILD_BLAME="Package version is the same as system."
       return 1
     fi
   fi
