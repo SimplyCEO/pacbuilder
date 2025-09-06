@@ -33,3 +33,16 @@ get_editor()
   return 1
 }
 
+get_package_version()
+{
+  local PKGVERSION=$(pacman -Qi $1 | grep Version | cut -d ':' -f 3 | sed 's/ \+//g')
+
+  if [ -z "${PKGVERSION}" ]; then
+    PKGVERSION=$(pacman -Qi $1 | grep Version | cut -d ':' -f 2 | sed 's/ \+//g')
+    if [ -z "${PKGVERSION}" ]; then printf "NULL"; return 1; fi
+  fi
+
+  printf "${PKGVERSION}"
+  return 0
+}
+

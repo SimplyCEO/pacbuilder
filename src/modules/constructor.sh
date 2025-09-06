@@ -1,6 +1,7 @@
 #!/bin/sh
 
 source /etc/pacbuilder.d/modules/project.sh
+source /etc/pacbuilder.d/modules/tools.sh
 
 BUILD_BLAME=""
 
@@ -46,11 +47,7 @@ compare_version()
   makepkg --printsrcinfo > .SRCINFO
 
   local LOCAL_PACKAGE_VERSION="$(cat .SRCINFO | grep pkgver | cut -d '=' -f 2 | sed 's/ \+//g')-$(cat .SRCINFO | grep pkgrel | cut -d '=' -f 2 | sed 's/ \+//g')"
-  local PACKAGE_VERSION=$(pacman -Qi ${PACKAGE} | grep Version | cut -d ':' -f 3 | sed 's/ \+//g')
-
-  if [ -z "${PACKAGE_VERSION}" ]; then
-    PACKAGE_VERSION=$(pacman -Qi ${PACKAGE} | grep Version | cut -d ':' -f 2 | sed 's/ \+//g')
-  fi
+  local PACKAGE_VERSION=$(get_package_version "${PACKAGE}")
 
   if [ "${LOCAL_PACKAGE_VERSION}" = "${PACKAGE_VERSION}" ]; then
     return 1
