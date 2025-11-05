@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source /etc/pacbuilder.d/modules/project.sh
+shinclude "project.sh"
 
 build_packages()
 {

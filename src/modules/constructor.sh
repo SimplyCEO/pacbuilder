@@ -1,7 +1,7 @@
 #!/bin/sh
 
-source /etc/pacbuilder.d/modules/project.sh
-source /etc/pacbuilder.d/modules/tools.sh
+shinclude "project.sh"
+shinclude "tools.sh"
 
 BUILD_BLAME=""
 

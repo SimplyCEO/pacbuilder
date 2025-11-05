@@ -7,11 +7,16 @@ if [ ! -d /etc/pacbuilder.d/modules ]; then
   exit 1
 fi
 
-source /etc/pacbuilder.d/modules/core.sh
-source /etc/pacbuilder.d/modules/tools.sh
-source /etc/pacbuilder.d/modules/information.sh
-source /etc/pacbuilder.d/modules/constructor.sh
-source /etc/pacbuilder.d/modules/manager.sh
+shinclude()
+{
+  source /etc/pacbuilder.d/modules/$1; return $?
+}
+
+shinclude "core.sh"
+shinclude "tools.sh"
+shinclude "information.sh"
+shinclude "constructor.sh"
+shinclude "manager.sh"
 
 if [ $# -lt 1 ]; then fhelp; exit 1; fi
 
