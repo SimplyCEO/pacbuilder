@@ -168,7 +168,10 @@ build_package()
   makepkg -s "${SKIP_PGP_SIGNATURE}"
   if [ $? -ne 0 ]; then
     fetch_pgp_key
-    if [ $? -eq 0 ]; then makepkg -s; fi
+    if [ $? -eq 0 ]; then
+      makepkg -s
+      if [ $? -ne 0 ]; then return 1; fi
+    fi
   fi
 
   return $?
