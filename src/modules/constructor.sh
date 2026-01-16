@@ -30,11 +30,13 @@ list_clone_directory()
 fetch_pgp_key()
 {
   if [ -d "./keys/pgp" ] && [ ! -z "$(ls ./keys/pgp/*.asc)" ]; then
-    printf "%b::%b%b %s%b\n" \
-      "\033[1;34m" "\033[0m"  \
-      "\033[1m" "Local PGP keys found. Importing..." "\033[0m"
-    gpg --quiet --import ./keys/pgp/*.asc
-    return 0
+    if ! gpg --list-keys | grep $(ls keys/pgp/*.asc | cut -d '/' -f 3 | cut -d '.' -f 1); then
+      printf "%b::%b%b %s%b\n" \
+        "\033[1;34m" "\033[0m"  \
+        "\033[1m" "Local PGP keys found." "\033[0m"
+      gpg --quiet --interactive --import ./keys/pgp/*.asc
+      return 0
+    fi
   fi
 
   return 1
