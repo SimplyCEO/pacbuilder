@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PROJECT_NAME=$(basename $0)
-PROJECT_VERSION="0.0.20"
+PROJECT_VERSION="0.0.21"
 REPO_FOLDER="${HOME}/.cache/pacbuilder"
 mkdir -p "${REPO_FOLDER}"
 

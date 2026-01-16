@@ -330,16 +330,21 @@ edit_package()
     if [ $SKIP_EDIT -eq 0 ]; then
       git restore PKGBUILD
       cp PKGBUILD PKGBUILD.editor
-      local EDITOR=$(get_editor)
+
+      local EDITOR=$(get_default_package "vim vi nano neovim ed" "$EDITOR")
       if [ ! -z $EDITOR ]; then
         $EDITOR PKGBUILD.editor
-        if [ ! -z "$(diff PKGBUILD PKGBUILD.editor)" ]; then
-          diff PKGBUILD PKGBUILD.editor > PKGBUILD.patch
+
+        local EMBEDDED=$(get_default_package "busybox toybox" "$EMBEDDED")
+        if [ ! -z "$($EMBEDDED diff -U 0 PKGBUILD PKGBUILD.editor)" ]; then
+          $EMBEDDED diff -U 0 PKGBUILD PKGBUILD.editor > PKGBUILD.patch
           printf "\033[1;32m::\033[0m \033[1mA patch for PKGBUILD has succesfully been created.\033[0m\n"
         fi
+
         rm PKGBUILD.editor
       fi
     fi
+
     cd - >/dev/null 2>&1
   else
     return 1

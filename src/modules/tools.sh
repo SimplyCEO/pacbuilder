@@ -18,15 +18,15 @@ array()
   return 1
 }
 
-get_editor()
+get_default_package()
 {
-  if [ -z $EDITOR ]; then
-    local EDITOR_ARRAY="vim vi nano neovim ed"
-    for editor in $(array -1 "${EDITOR_ARRAY}"); do
-      if which $editor >/dev/null 2>&1; then echo $editor; return 0; fi
+  if [ -z $2 ]; then
+    local DEFAULT_PACKAGE_ARRAY="$1"
+    for package in $(array -1 "${DEFAULT_PACKAGE_ARRAY}"); do
+      if which $package >/dev/null 2>&1; then echo $package; return 0; fi
     done
   else
-    echo $EDITOR
+    echo $2
     return 0
   fi
 
