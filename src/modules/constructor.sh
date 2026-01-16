@@ -160,12 +160,10 @@ build_package()
   build_dependencies
 
   if [ $(basename "${PACKAGE_PWD}") = "${PACKAGE}" ]; then cd "${PACKAGE_PWD}"; fi
-  for data in $(/bin/ls); do
-    if [ "${data}" = "PKGBUILD.patch" ]; then
-      patch -N PKGBUILD < PKGBUILD.patch > /dev/null 2>&1
-      makepkg -g >> PKGBUILD
-    fi
-  done
+  if [ -f PKGBUILD.patch ]; then
+    patch -N PKGBUILD < PKGBUILD.patch > /dev/null 2>&1
+    makepkg -g >> PKGBUILD
+  fi
 
   makepkg -s "${SKIP_PGP_SIGNATURE}"
   if [ $? -ne 0 ]; then
