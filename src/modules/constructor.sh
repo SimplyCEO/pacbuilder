@@ -311,21 +311,21 @@ edit_package()
 
   if [ ! -z "${PACKAGE}" ]; then
     cd "${REPO_FOLDER}/${PACKAGE}"
+
     local SKIP_EDIT=0
+
     if [ -f "PKGBUILD.patch" ]; then
-      printf "\033[1;33m::\033[0m \033[1mWARNING: A patch file for PKGBUILD has been found. What do you want to do? [DELETE/read/skip]\033[0m\n"
       local RESPONSE=""
       local DEFAULT_RESPONSE="delete"
+
+      printf "\033[1;33m::\033[0m \033[1mWARNING: A patch file for PKGBUILD has been found. What do you want to do? [DELETE/edit/skip]\033[0m\n"
       read RESPONSE
       if [ -z "${RESPONSE}" ]; then RESPONSE="${DEFAULT_RESPONSE}"; fi
+
       RESPONSE=$(echo "${RESPONSE}" | tr '[:upper:]' '[:lower:]')
       case "${RESPONSE}" in
         skip) SKIP_EDIT=1 ;;
-        read)
-          SKIP_EDIT=1
-          patch -N PKGBUILD < PKGBUILD.patch > /dev/null 2>&1
-          cat PKGBUILD | less
-          ;;
+        edit) ;;
         delete|*) rm PKGBUILD.patch ;;
       esac
     fi
@@ -334,17 +334,25 @@ edit_package()
       git restore PKGBUILD
       cp PKGBUILD PKGBUILD.editor
 
+      if [ -f "PKGBUILD.patch" ]; then
+        patch -N PKGBUILD.editor < PKGBUILD.patch > /dev/null 2>&1
+      fi
+
+      cp PKGBUILD.editor PKGBUILD.editor.patch
+
       local EDITOR=$(get_default_package "vim vi nano neovim ed" "$EDITOR")
       if [ ! -z $EDITOR ]; then
         $EDITOR PKGBUILD.editor
 
         local EMBEDDED=$(get_default_package "busybox toybox" "$EMBEDDED")
-        if [ ! -z "$($EMBEDDED diff -U 0 PKGBUILD PKGBUILD.editor)" ]; then
-          $EMBEDDED diff -U 0 PKGBUILD PKGBUILD.editor > PKGBUILD.patch
+        local OLD_PKGBUILD_MD5=$($EMBEDDED md5sum PKGBUILD.editor.patch | $EMBEDDED cut -d ' ' -f 1)
+        local NEW_PKGBUILD_MD5=$($EMBEDDED md5sum PKGBUILD.editor | $EMBEDDED cut -d ' ' -f 1)
+        if [ ${OLD_PKGBUILD_MD5} != ${NEW_PKGBUILD_MD5} ]; then
+          $EMBEDDED diff -U 1 PKGBUILD PKGBUILD.editor > PKGBUILD.patch
           printf "\033[1;32m::\033[0m \033[1mA patch for PKGBUILD has succesfully been created.\033[0m\n"
         fi
 
-        rm PKGBUILD.editor
+        rm PKGBUILD.editor PKGBUILD.editor.patch
       fi
     fi
 
