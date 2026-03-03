@@ -18,6 +18,41 @@ array()
   return 1
 }
 
+# $(vercmp 1.0.1 ">" 0.0.1) = 0
+# $(vercmp 0.0.1 ">" 1.0.1) = 1
+vercmp()
+{
+  local dest_ver="$1"
+  local condition="$2"
+  local src_ver="$3"
+
+  local dest_v_major=$(echo "${dest_ver}" | cut -d '.' -f 1)
+  if [ -z $dest_v_major ]; then return -1; fi
+  local src_v_major=$(echo "${src_ver}" | cut -d '.' -f 1)
+  if [ -z $src_v_major ]; then return -1; fi
+
+  local dest_v_minor=$(echo "${dest_ver}" | cut -d '.' -f 2)
+  local dest_v_patch=$(echo "${dest_ver}" | cut -d '.' -f 3)
+  local dest_v_extra=$(echo "${dest_ver}" | cut -d '.' -f 4)
+
+  local src_v_minor=$(echo "${src_ver}" | cut -d '.' -f 2)
+  local src_v_patch=$(echo "${src_ver}" | cut -d '.' -f 3)
+  local src_v_extra=$(echo "${src_ver}" | cut -d '.' -f 4)
+
+  local dest_v_def=$((dest_v_extra+(dest_v_patch*10000)+(dest_v_minor*1000000)+(dest_v_major*1000000000)))
+  local src_v_def=$((src_v_extra+(src_v_patch*10000)+(src_v_minor*1000000)+(src_v_major*1000000000)))
+  case $condition in
+    "==") if [ ! $dest_v_def -eq $src_v_def ]; then return 1; fi ;;
+    "!=") if [ ! $dest_v_def -ne $src_v_def ]; then return 1; fi ;;
+    "<") if [ ! $dest_v_def -lt $src_v_def ]; then return 1; fi ;;
+    "<=") if [ ! $dest_v_def -le $src_v_def ]; then return 1; fi ;;
+    ">") if [ ! $dest_v_def -gt $src_v_def ]; then return 1; fi ;;
+    ">=") if [ ! $dest_v_def -ge $src_v_def ]; then return 1; fi ;;
+  esac
+
+  return 0
+}
+
 get_default_package()
 {
   if [ -z $2 ]; then

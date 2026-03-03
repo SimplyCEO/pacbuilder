@@ -48,11 +48,16 @@ compare_version()
 
   makepkg --printsrcinfo > .SRCINFO
 
-  local LOCAL_PACKAGE_VERSION="$(cat .SRCINFO | grep pkgver | cut -d '=' -f 2 | sed 's/ \+//g')-$(cat .SRCINFO | grep pkgrel | cut -d '=' -f 2 | sed 's/ \+//g')"
+  local LOCAL_PACKAGE_VERSION=$(cat .SRCINFO | grep pkgver | cut -d '=' -f 2 | sed 's/ \+//g')-$(cat .SRCINFO | grep pkgrel | cut -d '=' -f 2 | sed 's/ \+//g')
   local PACKAGE_VERSION=$(get_package_version "${PACKAGE}")
 
-  if [ "${LOCAL_PACKAGE_VERSION}" = "${PACKAGE_VERSION}" ]; then
-    return 1
+  if [ ${LOCAL_PACKAGE_VERSION} == ${PACKAGE_VERSION} ]; then return 1
+  else
+    local RAW_LOCAL_PACKAGE_VERSION=$(echo ${LOCAL_PACKAGE_VERSION} | cut -d '-' -f 1)
+    local RAW_PACKAGE_VERSION=$(echo ${PACKAGE_VERSION} | cut -d '-' -f 1)
+    vercmp $RAW_LOCAL_PACKAGE_VERSION "<" $RAW_PACKAGE_VERSION
+
+    if [ $? -eq 0 ]; then return 2; fi
   fi
 
   return 0
@@ -152,9 +157,10 @@ build_package()
 
   if [ $UPGRADE_PACKAGES -eq 1 ]; then
     compare_version "${PACKAGE}"
-    if [ $? -eq 1 ]; then
-      BUILD_BLAME="Package version is the same as system."
-      return 1
+    case $? in
+      1) BUILD_BLAME="Package version is equal as the system."; return 1 ;;
+      2) BUILD_BLAME="Package version is older as the system."; return 2 ;;
+    esac
     fi
   fi
 
