@@ -161,8 +161,9 @@ build_package()
       1) BUILD_BLAME="Package version is equal as the system."; return 1 ;;
       2) BUILD_BLAME="Package version is older as the system."; return 2 ;;
     esac
-    fi
   fi
+
+  if [ -n "$(ls *.pkg.tar.*  > /dev/null 2>&1)" ]; then return 0; fi
 
   DEPENDENCY_RABBIT_HOLE=$((DEPENDENCY_RABBIT_HOLE+1))
   build_dependencies
