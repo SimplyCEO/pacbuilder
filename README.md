@@ -15,7 +15,7 @@ while acting as a extension for Pacman.
 Installation
 ------------
 
-Copy `src/pacbuilder` to the local binary folder:
+Copy `src/pacbuilder.sh` to the local binary folder:
 ```shell
 su -c "make install-binary"
 ```

@@ -20,7 +20,7 @@ directories:
 	$(INSTALL) -d $(DESTDIR)$(sysconfdir)/$(PROJECT).d/modules
 
 install-binary: directories
-	$(INSTALL) -m755 src/$(PROJECT) $(DESTDIR)$(bindir)/$(PROJECT)
+	$(INSTALL) -m755 src/$(PROJECT).sh $(DESTDIR)$(bindir)/$(PROJECT)
 
 install-configuration: directories
 	$(INSTALL) -m644 assets/$(PROJECT).conf $(DESTDIR)$(sysconfdir)/$(PROJECT).conf
