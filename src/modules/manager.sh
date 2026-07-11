@@ -4,7 +4,7 @@ shinclude "project.sh"
 
 build_packages()
 {
-  clone_package "$1" $2
+  clone_package "$1" $2 $3 0
   if [ $? -eq 0 ]; then
     build_package "$1"
     if [ $? -eq 0 ]; then
@@ -31,8 +31,8 @@ clean_packages()
 
 edit_packages()
 {
-  clone_package $1 0 1
-  if [ $? -ne 1 ]; then
+  clone_package $1 $2 0 1
+  if [ $2 -eq 0 ] && [ $? -ne 1 ]; then
     build_package $1
     if [ $? -eq 0 ]; then
       install_package $1
@@ -51,12 +51,21 @@ list_packages()
   return 0
 }
 
+pull_packages()
+{
+  list_clone_directory "$1" 1
+  if [ $? -eq 0 ]; then
+    clean_repository "$1"
+    clone_package "$1" 1 0 0
+  fi
+}
+
 upgrade_packages()
 {
   list_clone_directory "$1" 1
   if [ $? -eq 0 ]; then
     clean_repository "$1"
-    build_packages "$1" 1
+    build_packages "$1" 0 1
   fi
 }
 

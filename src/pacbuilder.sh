@@ -25,11 +25,13 @@ FLAG_CALL=$(array 0 "${OPTIONS}")
 case "${FLAG_CALL}" in
   -h|--help) fhelp; exit 0 ;;
   -V|--version) fversion; exit 0 ;;
-  -B|-Bu|--build)
+  -B|-Bu|-By|-Byu|--build)
     EXTRA_OPTION=0
 
     case "${FLAG_CALL}" in
       -Bu) UPGRADE_PACKAGES=1 ;;
+      -By) PULL_PACKAGES=1 ;;
+      -Byu) PULL_PACKAGES=1; UPGRADE_PACKAGES=1 ;;
       *) if [ $# -lt 2 ]; then fhelp; exit 1; fi ;;
     esac
 
@@ -46,6 +48,7 @@ case "${FLAG_CALL}" in
         --skippgpcheck) SKIP_PGP_SIGNATURE="--skippgpcheck" ;;
         --purge) PURGE_PACKAGES=1 ;;
         -u|--upgrade) UPGRADE_PACKAGES=1 ;;
+        -y|--sync) PULL_PACKAGES=1 ;;
         *) fhelp "${extra_option}"; exit 0 ;;
       esac
       EXTRA_OPTION=1
@@ -55,23 +58,17 @@ case "${FLAG_CALL}" in
     STRING="$@"
     if [ ! -z "${STRING}" ]; then
       for package in "$@"; do
+        if [ $CLEAN_PACKAGES -eq 1 ] || [ $PURGE_PACKAGES -eq 1 ]; then clean_packages "${package}"; continue; fi
+
         if [ $EXTRA_OPTION -eq 1 ]; then
-          if [ $EDIT_PACKAGES -eq 1 ]; then edit_packages "${package}"; continue; fi
+          if [ $EDIT_PACKAGES -eq 1 ]; then edit_packages "${package}" $PULL_PACKAGES; continue; fi
           if [ $LIST_PACKAGES -eq 1 ]; then list_packages "${package}"; continue; fi
         fi
 
-        if [ $CLEAN_PACKAGES -eq 1 ] || [ $PURGE_PACKAGES -eq 1 ]; then clean_packages "${package}"; continue; fi
+        if [ $PULL_PACKAGES -eq 1 ]; then pull_packages "${package}"; fi
+        if [ $UPGRADE_PACKAGES -eq 1 ]; then upgrade_packages "${package}"
+        else build_packages "${package}"; fi
 
-        case "${FLAG_CALL}" in
-          -B|--build)
-            if [ $UPGRADE_PACKAGES -eq 1 ]; then
-              upgrade_packages "${package}"
-            else
-              build_packages "${package}"
-            fi
-            ;;
-          -Bu) upgrade_packages "${package}" ;;
-        esac
         DEPENDENCY_RABBIT_HOLE=0
         PACKAGE_PWD=""
       done
@@ -80,9 +77,10 @@ case "${FLAG_CALL}" in
       if [ $CLEAN_PACKAGES -eq 1 ] || [ $PURGE_PACKAGES -eq 1 ] && [ $UPGRADE_PACKAGES -ne 1 ]; then clean_packages NULL; exit 0; fi
       if [ $LIST_PACKAGES -eq 1 ]; then list_packages; fi
       # Upgrade all packages inside clone directory.
-      if [ $UPGRADE_PACKAGES -eq 1 ]; then
+      if [ $PULL_PACKAGES -eq 1 ] || [ $UPGRADE_PACKAGES -eq 1 ]; then
         for package in $(ls "${REPO_FOLDER}"); do
-          upgrade_packages "${package}"
+          if [ $PULL_PACKAGES -eq 1 ]; then pull_packages "${package}"; fi
+          if [ $UPGRADE_PACKAGES -eq 1 ]; then upgrade_packages "${package}"; fi
           DEPENDENCY_RABBIT_HOLE=0
           PACKAGE_PWD=""
         done

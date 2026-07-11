@@ -260,8 +260,14 @@ clean_repository()
 clone_package()
 {
   local PACKAGE=$1
-  local UPGRADE=$2
-  local EDIT=$3
+  local PULL=$2
+  local UPGRADE=$3
+  local EDIT=$4
+
+  if [ -z "${PACKAGE}" ]; then printf "\033[1;31m::\033[0m \033[1mERROR: Invalid function call (clone_package)\033[0m\n"; fi
+  if [ -z $PULL ]; then PULL=0; fi
+  if [ -z $UPGRADE ]; then UPGRADE=0; fi
+  if [ -z $EDIT ]; then EDIT=0; fi
 
   if [ ! -f "${REPO_FOLDER}/${PACKAGE}/PKGBUILD" ]; then
     printf "\033[1;34m::\033[0m \033[1mAttempting to download ${PACKAGE}...\033[0m\n"
@@ -297,14 +303,18 @@ clone_package()
 
     printf "\033[1;32m::\033[0m \033[1m${PACKAGE} was succesfully downloaded. Building...\033[0m\n"
   else
-    printf "\033[1;34m::\033[0m \033[1m${PACKAGE} already exists. Building...\033[0m\n"
+    printf "\033[1;34m::\033[0m \033[1m${PACKAGE} already exists."
 
     # Update repository
     cd "${REPO_FOLDER}/${PACKAGE}"
 
     git restore .
-    if [ ! -z $UPGRADE ] && [ $UPGRADE -eq 1 ]; then git pull; fi
-    if [ ! -z $EDIT ] && [ $EDIT -eq 1 ]; then edit_package ${PACKAGE}; fi
+    if [ $PULL -eq 1 ] || [ $UPGRADE -eq 1 ]; then
+      printf " Upgrading...\033[0m\n"
+      git pull
+    else printf " Building...\033[0m\n"; fi
+
+    if [ $EDIT -eq 1 ]; then edit_package ${PACKAGE}; fi
     if [ ! -f .SRCINFO ]; then makepkg --printsrcinfo > .SRCINFO; fi
     cd - >/dev/null 2>&1
   fi

@@ -7,10 +7,11 @@ fhelp()
   local EXTRA_FLAG=$1
 
   if [ $(strncmp "${EXTRA_FLAG}" "-h" 2) = 0 ] || [ $(strncmp "${EXTRA_FLAG}" "--help" 6) = 0 ]; then
-    printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n"                                   \
+    printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n"                                   \
       "usage:  ${PROJECT_NAME} {-B --build} [options] [package(s)]"                 \
       "options:"                                                                    \
       "  -u, --upgrade        clean and upgrade the contents of each package."      \
+      "  -y, --sync           clean and fetch for updates of each package." \
       "      --clean          clean build contents of each given package."            \
       "      --list           list the existing packages from the build directory"  \
       "                       or their contents, if provided name."                 \
