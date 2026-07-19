@@ -65,8 +65,10 @@ case "${FLAG_CALL}" in
           if [ $LIST_PACKAGES -eq 1 ]; then list_packages "${package}"; continue; fi
         fi
 
-        if [ $PULL_PACKAGES -eq 1 ]; then pull_packages "${package}"; fi
-        if [ $UPGRADE_PACKAGES -eq 1 ]; then upgrade_packages "${package}"
+        if [ $UPGRADE_PACKAGES -eq 1 ]; then
+          upgrade_packages "${package}"
+        elif [ $PULL_PACKAGES -eq 1 ]; then
+          pull_packages "${package}"
         else build_packages "${package}"; fi
 
         DEPENDENCY_RABBIT_HOLE=0
@@ -79,8 +81,11 @@ case "${FLAG_CALL}" in
       # Upgrade all packages inside clone directory.
       if [ $PULL_PACKAGES -eq 1 ] || [ $UPGRADE_PACKAGES -eq 1 ]; then
         for package in $(ls "${REPO_FOLDER}"); do
-          if [ $PULL_PACKAGES -eq 1 ]; then pull_packages "${package}"; fi
-          if [ $UPGRADE_PACKAGES -eq 1 ]; then upgrade_packages "${package}"; fi
+          if [ $UPGRADE_PACKAGES -eq 1 ]; then
+            upgrade_packages "${package}"
+          elif [ $PULL_PACKAGES -eq 1 ]; then
+            pull_packages "${package}"
+          fi
           DEPENDENCY_RABBIT_HOLE=0
           PACKAGE_PWD=""
         done

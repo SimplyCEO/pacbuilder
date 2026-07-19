@@ -56,7 +56,7 @@ pull_packages()
   list_clone_directory "$1" 1
   if [ $? -eq 0 ]; then
     clean_repository "$1"
-    clone_package "$1" 1 0 0
+    clone_package "$1" $PULL_PACKAGES $UPGRADE_PACKAGES 0
   fi
 }
 
@@ -65,7 +65,7 @@ upgrade_packages()
   list_clone_directory "$1" 1
   if [ $? -eq 0 ]; then
     clean_repository "$1"
-    build_packages "$1" 0 1
+    build_packages "$1" $PULL_PACKAGES $UPGRADE_PACKAGES
   fi
 }
 

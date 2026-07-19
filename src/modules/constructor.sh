@@ -309,10 +309,19 @@ clone_package()
     cd "${REPO_FOLDER}/${PACKAGE}"
 
     git restore .
-    if [ $PULL -eq 1 ] || [ $UPGRADE -eq 1 ]; then
-      printf " Upgrading...\033[0m\n"
+    if [ $PULL -eq 1 ] && [ $UPGRADE -eq 1 ]; then
+      printf " Fetching and upgrading...\033[0m\n"
       git pull
-    else printf " Building...\033[0m\n"; fi
+    elif [ $PULL -eq 1 ] && [ $UPGRADE -eq 0 ]; then
+      printf " Fetching...\033[0m\n"
+      git pull
+    else
+      if [ $UPGRADE -eq 1 ]; then
+        printf " Upgrading...\033[0m\n"
+      else
+        printf " Building...\033[0m\n"
+      fi
+    fi
 
     if [ $EDIT -eq 1 ]; then edit_package ${PACKAGE}; fi
     if [ ! -f .SRCINFO ]; then makepkg --printsrcinfo > .SRCINFO; fi
