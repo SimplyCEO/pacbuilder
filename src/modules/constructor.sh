@@ -29,12 +29,39 @@ list_clone_directory()
 
 fetch_pgp_key()
 {
-  if [ -d "./keys/pgp" ] && [ ! -z "$(ls ./keys/pgp/*.asc)" ]; then
-    if ! gpg --list-keys | grep $(ls keys/pgp/*.asc | cut -d '/' -f 3 | cut -d '.' -f 1); then
+  local PGP_KEYS=""
+  local PGP_KEYS_NEEDED=""
+  local PGP_KEYS_PATH=""
+
+  if [ ! -d "./keys/" ] || [ ! -d "./keys/pgp/" ]; then return 1; fi
+
+  PGP_KEYS_PATH="$(ls ./keys/pgp/*.asc 2>&1)"
+  if [ ! -z "${PGP_KEYS_PATH}" ]; then
+    for pgp in $(echo "${PGP_KEYS_PATH}" | xargs); do
+      local PGP_KEY_FILENAME="$(basename ${pgp})"
+      local PGP_KEY_HASH="$(echo ${PGP_KEY_FILENAME} | cut -d '.' -f 1)"
+      PGP_KEYS="${PGP_KEYS} ${PGP_KEY_HASH}"
+    done
+
+    if [ ! -z "${PGP_KEYS}" ]; then
+      for pgp in $(echo "${PGP_KEYS}" | xargs); do
+        if ! gpg --list-keys | grep -q "${pgp}"; then
+          PGP_KEYS_NEEDED="${PKG_KEYS_NEEDED} ${pgp}";
+        fi
+      done
+
+      if [ ! -z "${PGP_KEYS_NEEDED}" ]; then return 0; fi
+
+      PGP_KEYS_PATH=""
+      for pgp in $(echo "${PGP_KEYS_NEEDED}" | xargs); do
+        PGP_KEYS_PATH="${PGP_KEYS_PATH} ./keys/pgp/${pgp}.asc"
+      done
+
       printf "%b::%b%b %s%b\n" \
         "\033[1;34m" "\033[0m"  \
         "\033[1m" "Local PGP keys found." "\033[0m"
-      gpg --quiet --interactive --import ./keys/pgp/*.asc
+      gpg --quiet --interactive --import "${PGP_KEYS_PATH}"
+
       return 0
     fi
   fi
@@ -175,15 +202,13 @@ build_package()
   fi
 
   makepkg -s "${SKIP_PGP_SIGNATURE}"
-  if [ $? -ne 0 ]; then
-    fetch_pgp_key
-    if [ $? -eq 0 ]; then
-      makepkg -s
-      if [ $? -ne 0 ]; then return 1; fi
-    fi
-  fi
+  if [ $? -eq 0 ]; then return 0; fi
+  fetch_pgp_key
+  if [ $? -ne 0 ]; then return 1; fi
+  makepkg -s
+  if [ $? -ne 0 ]; then return 1; fi
 
-  return $?
+  return 0
 }
 
 clean_package()
